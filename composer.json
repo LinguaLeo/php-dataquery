@@ -1,0 +1,19 @@
+{
+    "name": "lingualeo/php-dataquery",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "LinguaLeo",
+            "email": "backend@lingualeo.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "php": ">=5.4.0"
+    },
+    "autoload": {
+        "psr-0": {
+            "LinguaLeo\\": "src/"
+        }
+    }
+}
