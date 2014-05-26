@@ -1,42 +1,31 @@
 <?php
 namespace LinguaLeo\DataQuery;
 
-class CriteriaFactoryTest extends \PHPUnit_Framework_TestCase
+class CriteriaCompilerTest extends \PHPUnit_Framework_TestCase
 {
-
-    public function testLocation()
-    {
-        $criteria = CriteriaFactory::create('user', []);
-        $this->assertSame('user', $criteria->location);
-    }
-
-    public function testMeta()
-    {
-        $criteria = CriteriaFactory::create('user', [], ['locale' => 'ru']);
-        $this->assertSame('ru', $criteria->getMeta('locale'));
-    }
 
     public function testWhereEquals()
     {
-        $criteria = CriteriaFactory::create(
+        $userIdList = [1, 2, 3];
+        $criteria = eval(CriteriaCompiler::create(
             'user',
             ['where' => ['user_id' => 3]]
-        );
+        ));
         $this->assertSame([['user_id', 3, Criteria::EQUAL]], $criteria->conditions);
     }
 
     public function testWhereGreater()
     {
-        $criteria = CriteriaFactory::create(
+        $criteria = eval(CriteriaCompiler::create(
             'user',
             ['where' => ['user_id' => [Criteria::GREATER => 2]]]
-        );
+        ));
         $this->assertSame([['user_id', 2, Criteria::GREATER]], $criteria->conditions);
     }
 
     public function testWhereGreaterAndLess()
     {
-        $criteria = CriteriaFactory::create(
+        $criteria = eval(CriteriaCompiler::create(
             'user',
             ['where' => [
                 'user_id' => [
@@ -44,13 +33,13 @@ class CriteriaFactoryTest extends \PHPUnit_Framework_TestCase
                     Criteria::LESS => 20,
                 ]
             ]]
-        );
+        ));
         $this->assertSame([['user_id', 2, Criteria::GREATER], ['user_id', 20, Criteria::LESS]], $criteria->conditions);
     }
 
     public function testWhereGreaterAndLessAndActive()
     {
-        $criteria = CriteriaFactory::create(
+        $criteria = eval(CriteriaCompiler::create(
             'user',
             ['where' => [
                 'user_id' => [
@@ -59,7 +48,7 @@ class CriteriaFactoryTest extends \PHPUnit_Framework_TestCase
                 ],
                 'user_is_active' => 1
             ]]
-        );
+        ));
         $this->assertSame(
             [
                 ['user_id', 2, Criteria::GREATER],
@@ -72,117 +61,123 @@ class CriteriaFactoryTest extends \PHPUnit_Framework_TestCase
 
     public function testLimit()
     {
-        $criteria = CriteriaFactory::create(
+        $criteria = eval(CriteriaCompiler::create(
             'user',
             ['limit' => 10]
-        );
+        ));
         $this->assertSame(10, $criteria->limit);
     }
 
     public function testLimitOffset()
     {
-        $criteria = CriteriaFactory::create(
+        $criteria = eval(CriteriaCompiler::create(
             'user',
             ['limit' => [10, 30]]
-        );
+        ));
         $this->assertSame(10, $criteria->limit);
         $this->assertSame(30, $criteria->offset);
     }
 
     public function testRead()
     {
-        $criteria = CriteriaFactory::create(
+        $criteria = eval(CriteriaCompiler::create(
             'user',
             ['read' => ['a', 'b']]
-        );
+        ));
         $this->assertSame(['a', 'b'], $criteria->fields);
     }
 
     public function testAggregate()
     {
-        $criteria = CriteriaFactory::create(
+        $criteria = eval(CriteriaCompiler::create(
             'user',
             ['aggregate' => [
                 ['count'],
                 ['sum', 'a']
             ]]
-        );
+        ));
         $this->assertSame([['count', null], ['sum', 'a']], $criteria->aggregations);
     }
 
     public function testWrite()
     {
-        $criteria = CriteriaFactory::create(
+        $criteria = eval(CriteriaCompiler::create(
             'user',
             ['write' => ['a' => 1, 'b' =>2]]
-        );
+        ));
         $this->assertSame(['a', 'b'], $criteria->fields);
         $this->assertSame([1, 2], $criteria->values);
     }
 
     public function testWritePipe()
     {
-        $criteria = CriteriaFactory::create(
+        $criteria = eval(CriteriaCompiler::create(
             'user',
             ['writePipe' => [
                 ['a' => 1, 'b' => 2],
                 ['a' => 3, 'b' => 4],
                 ['a' => 5, 'b' => 6]
             ]]
-        );
+        ));
         $this->assertSame(['a', 'b'], $criteria->fields);
         $this->assertSame([[1, 3, 5], [2, 4, 6]], $criteria->values);
     }
 
     public function testUpsert()
     {
-        $criteria = CriteriaFactory::create(
+        $criteria = eval(CriteriaCompiler::create(
             'user',
             ['upsert' => ['a']]
-        );
+        ));
         $this->assertSame(['a'], $criteria->upsert);
     }
 
     public function testOrderBy()
     {
-        $criteria = CriteriaFactory::create(
+        $criteria = eval(CriteriaCompiler::create(
             'user',
             ['orderBy' => ['a', ['b', SORT_DESC]]]
-        );
+        ));
         $this->assertSame(['a' => SORT_ASC, 'b' => SORT_DESC], $criteria->orderBy);
     }
 
-    /*
-    public function testConditional()
+    public function testReadWhereOrderByLimit()
     {
-        $localeList = [];
-        $criteria = CriteriaFactory::create(
-            'user',
-            ['where' => [
-                'user_id' => 3,
-                ['if', $localeList, ['locale' => [Criteria::IN => $localeList]]]
-            ]]
+        $outerMin = 2;
+        $outerMax = 20;
+        $outerFields = ['a', 'b'];
+        $outerLimit = 10;
+        $outerOffset = 30;
+        $fn = function ($min, $max, $fields, $limit, $offset) {
+            return eval(CriteriaCompiler::create(
+                'user',
+                [
+                    'read' => '$fields',
+                    'where' => [
+                        'user_id' => [
+                            Criteria::GREATER => '$min',
+                            Criteria::LESS => '$max',
+                        ],
+                        'user_is_active' => 1
+                    ],
+                    'orderBy' => ['c', ['d', SORT_DESC]],
+                    'limit' => ['$limit', '$offset']
+                ]
+            ));
+        };
+        $criteria = $fn($outerMin, $outerMax, $outerFields, $outerLimit, $outerOffset);
+        $this->assertSame(['a', 'b'], $criteria->fields);
+        $this->assertSame(
+            [
+                ['user_id', $outerMin, Criteria::GREATER],
+                ['user_id', $outerMax, Criteria::LESS],
+                ['user_is_active', 1, Criteria::EQUAL]
+            ],
+            $criteria->conditions
         );
+        $this->assertSame(['c' => SORT_ASC, 'd' => SORT_DESC], $criteria->orderBy);
+        $this->assertSame(10, $criteria->limit);
+        $this->assertSame(30, $criteria->offset);
     }
-
-    public function testIteration()
-    {
-        $users = [
-            ['id' => 1, 'name' => 'Vasya', 'email' => 'vasya@ll.com'],
-            ['id' => 2, 'name' => 'Kolya', 'email' => 'kolya@ll.com'],
-            ['id' => 3, 'name' => 'Petya', 'email' => 'petya@ll.com']
-        ];
-        $criteria = CriteriaFactory::create(
-            'user',
-            ['writePipe' => [
-                ['each', '$user', 'in', $users, [
-                    'id' => '$user[\'id\']', // can be '$user->getId()'
-                    'name' => '$user[\'name\']',
-                    'email' => '$user[\'email\']'
-                ]]
-            ]]
-        );
-    }
-     */
 
 }
