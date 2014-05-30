@@ -177,6 +177,11 @@ class CriteriaCompiler
         return implode(', ', array_map(['self', 'compileScalar'], $scalars));
     }
 
+    /**
+     * TODO detect variables in expressions, so
+     * 'limit' => [ '$size', '$page * $size' ] 
+     * have ['$size', '$page'], not ['$size', '$page * $size'] variables
+     */
     private static function detectVariables($code)
     {
         $variables = [];
