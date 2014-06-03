@@ -25,7 +25,7 @@ class QueryCompilerTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(new ResultInterfaceMock()));
 
         $id = 3;
-        list($fn, $code) = QueryCompiler::create('$query', [
+        eval(QueryCompiler::compile('$query', [
             'select' => 'many',
             'from' => [
                 'table' => 'user',
@@ -33,9 +33,7 @@ class QueryCompilerTest extends \PHPUnit_Framework_TestCase
             ],
             'read' => [ 'a', 'b', 'c' ],
             'where' => [ 'id' => '$id' ]
-        ]);
-        $result = ($code . 'return ' . $fn . '();');
-        eval($result);
+        ]));
     }
 
 }

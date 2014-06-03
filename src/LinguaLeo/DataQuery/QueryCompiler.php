@@ -4,7 +4,7 @@ namespace LinguaLeo\DataQuery;
 class QueryCompiler
 {
 
-    public static function create($queryVariableName, array $query)
+    public static function compileFunction($queryVariableName, array $query)
     {
         $variables = CriteriaCompiler::detectVariables($query);
         $invokedQuery = '';
@@ -19,6 +19,12 @@ class QueryCompiler
             $criteriaFunctionName . '())->' . $quantity . '();' . PHP_EOL .
             '};';
         return [$functionName, $code];
+    }
+
+    public static function compile($queryVariableName, array $query)
+    {
+        list($fn, $code) = self::compileFunction($queryVariableName, $query);
+        return ($code . 'return ' . $fn . '();');
     }
 
     private static function getFrom(array $query)
