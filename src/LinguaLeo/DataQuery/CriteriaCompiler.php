@@ -15,7 +15,7 @@ class CriteriaCompiler
         'orderBy' => 'applyOrderBy'
     ];
 
-    public static function create($location, array $condition, array $meta = [])
+    public static function compileFunction($location, array $condition, array $meta = [])
     {
         $variables = self::detectVariables($condition);
         $invokedCondition = '';
@@ -36,8 +36,13 @@ class CriteriaCompiler
             var_export($meta, true),
             $invokedCondition
         );
-        //var_dump($code);
         return [$functionName, $code];
+    }
+
+    public static function compile($queryVariableName, array $query)
+    {
+        list($fn, $code) = self::compileFunction($queryVariableName, $query);
+        return ($code . 'return ' . $fn . '();');
     }
 
     public static function applyKeyword($criteriaVar, $keyword, $attributes)
