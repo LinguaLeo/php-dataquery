@@ -9,15 +9,26 @@ class QueryCompiler
         $variables = CriteriaCompiler::detectVariables($query);
         $invokedQuery = '';
         list($location, $meta) = self::getFrom($query);
-        list($method, $quantity) = self::getMethod($query);
+        list($method, $quantity, $args) = self::getMethod($query);
         list($criteriaFunctionName, $criteriaFunctionCode) =
-            CriteriaCompiler::create($location, $query, $meta);
+            CriteriaCompiler::compileFunction($location, $query, $meta);
         $functionName = '$generatedFunction' . uniqid();
-        $code = $criteriaFunctionCode .
-            $functionName . ' = function () use (' . $queryVariableName . ', ' . $criteriaFunctionName . ') {' . PHP_EOL .
-            'return ' . $queryVariableName . '->' . $method . '(' .
-            $criteriaFunctionName . '())->' . $quantity . '();' . PHP_EOL .
-            '};';
+        $code = sprintf(
+            '%s' .
+            '%s = function () use (%s, %s) {' . PHP_EOL .
+            'return %s->%s(' .
+            '%s())->%s(%s);' . PHP_EOL .
+            '};',
+            $criteriaFunctionCode,
+            $functionName,
+            $queryVariableName,
+            $criteriaFunctionName,
+            $queryVariableName,
+            $method,
+            $criteriaFunctionName,
+            $quantity,
+            var_export($args, true)
+        );
         return [$functionName, $code];
     }
 
@@ -35,7 +46,13 @@ class QueryCompiler
     private static function getMethod(array $query)
     {
         if (isset($query['select'])) {
-            return ['select', $query['select']];
+            $resultSpecification = (array)$query['select'];
+            $resultMethod = array_shift($resultSpecification);
+            return [
+                'select',
+                $resultMethod,
+                $resultSpecification ? $resultSpecification[0] : []
+            ];
         } else {
             // throw smth
         }
