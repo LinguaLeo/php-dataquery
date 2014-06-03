@@ -23,27 +23,26 @@ class CriteriaCompiler
             $invokedCondition .=
                 self::applyKeyword('$criteria', $keyword, $attributes) . PHP_EOL;
         }
-        $functionName = 'generatedFunction' . uniqid();
+        $functionName = '$generatedFunction' . uniqid();
         $code = sprintf(
-            '$%s = function () %s {' . PHP_EOL .
+            '%s = function () %s {' . PHP_EOL .
             '$criteria = new LinguaLeo\DataQuery\Criteria(%s, %s);' . PHP_EOL .
             '%s' .
             'return $criteria;' . PHP_EOL .
-            '};' . PHP_EOL .
-            'return $%s();' . PHP_EOL,
+            '};' . PHP_EOL,
             $functionName,
             $variables ? sprintf('use (%s)', implode(', ', $variables)) : '',
             var_export($location, true),
             var_export($meta, true),
-            $invokedCondition,
-            $functionName
+            $invokedCondition
         );
-        return $code;
+        //var_dump($code);
+        return [$functionName, $code];
     }
 
     public static function applyKeyword($criteriaVar, $keyword, $attributes)
     {
-        if (self::$keywordMap[$keyword]) {
+        if (isset(self::$keywordMap[$keyword])) {
             $map = self::$keywordMap;
             return self::$map[$keyword]($criteriaVar, $attributes);
         } else {
@@ -182,7 +181,7 @@ class CriteriaCompiler
      * 'limit' => [ '$size', '$page * $size' ] 
      * have ['$size', '$page'], not ['$size', '$page * $size'] variables
      */
-    private static function detectVariables($code)
+    public static function detectVariables($code)
     {
         $variables = [];
         foreach ($code as $key => $value) {
