@@ -72,6 +72,11 @@ class Criteria
         return $this;
     }
 
+    public function getLimit()
+    {
+        return $this->limit;
+    }
+
     public function read(array $fields)
     {
         $this->fields = $fields;
