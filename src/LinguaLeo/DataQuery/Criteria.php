@@ -83,9 +83,9 @@ class Criteria
         return $this;
     }
 
-    public function aggregate($func, $field = null)
+    public function aggregate($func, $field = null, $alias = null)
     {
-        $this->aggregations[] = [$func, $field];
+        $this->aggregations[] = [$func, $field, $alias];
         return $this;
     }
 

@@ -28,6 +28,7 @@ namespace LinguaLeo\DataQuery;
 
 class CriteriaTest extends \PHPUnit_Framework_TestCase
 {
+    /** @var Criteria */
     protected $criteria;
 
     public function setUp()
@@ -83,7 +84,11 @@ class CriteriaTest extends \PHPUnit_Framework_TestCase
     {
         $this->criteria->aggregate('count');
         $this->criteria->aggregate('sum', 'a');
-        $this->assertSame([['count', null], ['sum', 'a']], $this->criteria->aggregations);
+        $this->criteria->aggregate('sum', 'a', 'sum_alias');
+        $this->assertSame(
+            [['count', null, null], ['sum', 'a', null], ['sum', 'a', 'sum_alias']],
+            $this->criteria->aggregations
+        );
     }
 
     public function testWrite()
