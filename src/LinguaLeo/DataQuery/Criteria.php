@@ -127,7 +127,8 @@ class Criteria
         if (is_array($value)) {
             return $value;
         }
-        return $value = [$value];
+        $value = [$value];
+        return $value;
     }
 
     public function getMeta($name)
