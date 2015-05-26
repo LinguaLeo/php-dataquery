@@ -41,6 +41,9 @@ class Criteria
     const IS_NULL = 'IS NULL';
     const IS_NOT_NULL = 'IS NOT NULL';
 
+    const UPSERT_UPDATE = 'update';
+    const UPSERT_INCREMENT = 'increment';
+
     protected $meta;
 
     public $location;
@@ -52,7 +55,7 @@ class Criteria
     public $orderBy;
     public $upsert;
     public $aggregations;
-    public $upsertIncrement = false;
+    public $upsertMode = self::UPSERT_UPDATE;
 
     public function __construct($location, array $meta = [])
     {
