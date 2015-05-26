@@ -52,6 +52,7 @@ class Criteria
     public $orderBy;
     public $upsert;
     public $aggregations;
+    public $upsertIncrement = false;
 
     public function __construct($location, array $meta = [])
     {
