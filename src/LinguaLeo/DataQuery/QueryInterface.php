@@ -67,4 +67,12 @@ interface QueryInterface
      * @return ResultInterface
      */
     public function increment(Criteria $criteria);
+
+    /**
+     * Insert new data to a storage, if exists then increment
+     *
+     * @param Criteria $criteria
+     * @return ResultInterface
+     */
+    public function insertIncrement(Criteria $criteria);
 }
