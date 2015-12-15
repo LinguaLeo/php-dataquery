@@ -52,7 +52,6 @@ class Criteria
     public $orderBy;
     public $upsert;
     public $aggregations;
-    public $canBeReadFromSlave;
 
     public function __construct($location, array $meta = [])
     {
@@ -144,10 +143,5 @@ class Criteria
     {
         $this->meta[$name] = $value;
         return $this;
-    }
-
-    public function canBeReadFromSlave($flag)
-    {
-        $this->canBeReadFromSlave = $flag;
     }
 }
